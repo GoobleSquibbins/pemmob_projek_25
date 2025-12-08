@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fesnuk/ui/create_thread_page.dart';
 
 class NooksPage extends StatelessWidget {
   const NooksPage({super.key});
@@ -20,6 +21,16 @@ class NooksPage extends StatelessWidget {
           'Nooks',
           style: TextStyle(color: Colors.white),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateThreadPage()),
+          );
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
       ),
       body: GridView.builder(
         padding: const EdgeInsets.all(16.0),

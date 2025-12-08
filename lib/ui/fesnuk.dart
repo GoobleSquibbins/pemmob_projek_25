@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fesnuk/ui/create_thread_page.dart';
 
 class FesnukPage extends StatelessWidget {
   const FesnukPage({super.key});
@@ -45,9 +46,19 @@ class _ThreadPageState extends State<ThreadPage> {
       appBar: AppBar(
         backgroundColor: const Color(0xFF262626),
         title: const Text(
-          'Threads',
+          'Fesnuk',
           style: TextStyle(color: Colors.white),
         ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const CreateThreadPage()),
+          );
+        },
+        backgroundColor: Colors.green,
+        child: const Icon(Icons.add),
       ),
       body: ListView.builder(
         itemCount: threads.length,
