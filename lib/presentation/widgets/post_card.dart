@@ -127,6 +127,7 @@ class PostCard extends StatelessWidget {
                     child: ReactionDisplay(
                       reactions: post.reactions,
                       onReactionTap: onReactionTap,
+                      postId: post.id,
                     ),
                   ),
                 ],

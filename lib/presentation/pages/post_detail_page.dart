@@ -145,6 +145,7 @@ class PostDetailPage extends StatelessWidget {
                                     onReactionTap: (unicode) {
                                       controller.reactToPost(unicode);
                                     },
+                                    postId: post.id,
                                   ),
                                 ),
                               ],
@@ -196,9 +197,6 @@ class PostDetailPage extends StatelessWidget {
                                     controller,
                                     commentId,
                                   );
-                                },
-                                onReactionTap: (commentId, unicode) {
-                                  controller.reactToComment(commentId, unicode);
                                 },
                                 onLoadReplies: (commentId) async {
                                   await controller.loadCommentReplies(commentId);

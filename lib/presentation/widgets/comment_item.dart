@@ -2,13 +2,10 @@ import 'package:flutter/material.dart';
 import '../../data/models/comment_model.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_formatter.dart';
-import 'reaction_display.dart';
-import 'reaction_button.dart';
 
 class CommentItem extends StatefulWidget {
   final CommentModel comment;
   final Function(int commentId)? onReply;
-  final Function(int commentId, String unicode)? onReactionTap;
   final Function(int commentId)? onLoadReplies;
   final List<CommentModel>? replies;
 
@@ -16,7 +13,6 @@ class CommentItem extends StatefulWidget {
     super.key,
     required this.comment,
     this.onReply,
-    this.onReactionTap,
     this.onLoadReplies,
     this.replies,
   });
@@ -104,43 +100,22 @@ class _CommentItemState extends State<CommentItem> {
                 ),
               ),
               const SizedBox(height: AppConstants.spacingSmall),
-              Row(
-                children: [
-                  if (widget.onReply != null)
-                    TextButton.icon(
-                      onPressed: () => widget.onReply!(widget.comment.id),
-                      icon: const Icon(
-                        Icons.reply,
-                        size: 16,
-                        color: AppConstants.primaryColor,
-                      ),
-                      label: const Text(
-                        'Reply',
-                        style: TextStyle(
-                          color: AppConstants.primaryColor,
-                          fontSize: 12,
-                        ),
-                      ),
-                    ),
-                  if (widget.onReactionTap != null)
-                    ReactionButton(
-                      onReactionSelected: (unicode) {
-                        widget.onReactionTap!(widget.comment.id, unicode);
-                      },
-                    ),
-                  Expanded(
-                    child: ReactionDisplay(
-                      reactions: widget.comment.reactions,
-                      onReactionTap: (unicode) {
-                        widget.onReactionTap?.call(
-                          widget.comment.id,
-                          unicode,
-                        );
-                      },
+              if (widget.onReply != null)
+                TextButton.icon(
+                  onPressed: () => widget.onReply!(widget.comment.id),
+                  icon: const Icon(
+                    Icons.reply,
+                    size: 16,
+                    color: AppConstants.primaryColor,
+                  ),
+                  label: const Text(
+                    'Reply',
+                    style: TextStyle(
+                      color: AppConstants.primaryColor,
+                      fontSize: 12,
                     ),
                   ),
-                ],
-              ),
+                ),
             ],
           ),
         ),
@@ -175,7 +150,6 @@ class _CommentItemState extends State<CommentItem> {
                       (reply) => CommentItem(
                         comment: reply,
                         onReply: widget.onReply,
-                        onReactionTap: widget.onReactionTap,
                       ),
                     ),
                 ],

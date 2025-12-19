@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 import '../../data/models/post_model.dart';
 import '../../data/models/comment_model.dart';
 import '../../data/repositories/api_repository.dart';
+import '../../core/services/reaction_storage_service.dart';
 
 class PostDetailController extends GetxController {
   final ApiRepository _repository = ApiRepository();
@@ -159,15 +160,28 @@ class PostDetailController extends GetxController {
       final currentPost = post.value;
       if (currentPost == null) return;
 
-      final currentCount = currentPost.reactions[unicode] ?? 0;
-      final action = currentCount > 0 ? -1 : 1;
-
-      final updatedPost = await _repository.reactToPost(
-        postId: postId!,
-        unicode: unicode,
-        action: action,
-      );
-      post.value = updatedPost;
+      // Check if user has already reacted with this emoji using local storage
+      final hasReacted = await ReactionStorageService.hasPostReaction(postId!, unicode);
+      
+      if (hasReacted) {
+        // User already reacted with this emoji, remove the reaction
+        final updatedPost = await _repository.reactToPost(
+          postId: postId!,
+          unicode: unicode,
+          action: -1,
+        );
+        post.value = updatedPost;
+        await ReactionStorageService.removePostReaction(postId!, unicode);
+      } else {
+        // User hasn't reacted with this emoji yet, add the reaction
+        final updatedPost = await _repository.reactToPost(
+          postId: postId!,
+          unicode: unicode,
+          action: 1,
+        );
+        post.value = updatedPost;
+        await ReactionStorageService.addPostReaction(postId!, unicode);
+      }
     } catch (e) {
       Get.snackbar(
         'Error',
@@ -177,29 +191,6 @@ class PostDetailController extends GetxController {
     }
   }
 
-  Future<void> reactToComment(int commentId, String unicode) async {
-    try {
-      final commentIndex = comments.indexWhere((c) => c.id == commentId);
-      if (commentIndex == -1) return;
-
-      final currentComment = comments[commentIndex];
-      final currentCount = currentComment.reactions[unicode] ?? 0;
-      final action = currentCount > 0 ? -1 : 1;
-
-      final updatedComment = await _repository.reactToComment(
-        commentId: commentId,
-        unicode: unicode,
-        action: action,
-      );
-      comments[commentIndex] = updatedComment;
-    } catch (e) {
-      Get.snackbar(
-        'Error',
-        'Failed to react: ${e.toString()}',
-        snackPosition: SnackPosition.BOTTOM,
-      );
-    }
-  }
 
   Future<void> refreshComments() async {
     await fetchComments();

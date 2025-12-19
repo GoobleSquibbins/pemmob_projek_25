@@ -1,6 +1,7 @@
 import 'package:get/get.dart';
 import '../../data/models/post_model.dart';
 import '../../data/repositories/api_repository.dart';
+import '../../core/services/reaction_storage_service.dart';
 
 class HomeController extends GetxController {
   final ApiRepository _repository = ApiRepository();
@@ -39,19 +40,35 @@ class HomeController extends GetxController {
 
   Future<void> reactToPost(int postId, String unicode) async {
     try {
-      final currentPost = posts.firstWhere((p) => p.id == postId);
-      final currentCount = currentPost.reactions[unicode] ?? 0;
-      final action = currentCount > 0 ? -1 : 1;
+      // Check if user has already reacted with this emoji using local storage
+      final hasReacted = await ReactionStorageService.hasPostReaction(postId, unicode);
+      
+      if (hasReacted) {
+        // User already reacted with this emoji, remove the reaction
+        final updatedPost = await _repository.reactToPost(
+          postId: postId,
+          unicode: unicode,
+          action: -1,
+        );
 
-      final updatedPost = await _repository.reactToPost(
-        postId: postId,
-        unicode: unicode,
-        action: action,
-      );
+        final index = posts.indexWhere((p) => p.id == postId);
+        if (index != -1) {
+          posts[index] = updatedPost;
+        }
+        await ReactionStorageService.removePostReaction(postId, unicode);
+      } else {
+        // User hasn't reacted with this emoji yet, add the reaction
+        final updatedPost = await _repository.reactToPost(
+          postId: postId,
+          unicode: unicode,
+          action: 1,
+        );
 
-      final index = posts.indexWhere((p) => p.id == postId);
-      if (index != -1) {
-        posts[index] = updatedPost;
+        final index = posts.indexWhere((p) => p.id == postId);
+        if (index != -1) {
+          posts[index] = updatedPost;
+        }
+        await ReactionStorageService.addPostReaction(postId, unicode);
       }
     } catch (e) {
       Get.snackbar(
