@@ -70,11 +70,15 @@ class PostCard extends StatelessWidget {
                   height: 200,
                   onImageTap: (index) {
                     // Navigate to full screen viewer
+                    final originalFileNames = post.attachments
+                        .map((attachment) => attachment.originalFileName)
+                        .toList();
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => ImageViewer(
                           imageUrls: imageUrls,
+                          originalFileNames: originalFileNames,
                           initialIndex: index,
                         ),
                       ),

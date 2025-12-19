@@ -121,11 +121,15 @@ class _PostDetailPageState extends State<PostDetailPage> {
                                 imageUrls: imageUrls,
                                 height: 300,
                                 onImageTap: (index) {
+                                  final originalFileNames = post.attachments
+                                      .map((attachment) => attachment.originalFileName)
+                                      .toList();
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
                                       builder: (context) => ImageViewer(
                                         imageUrls: imageUrls,
+                                        originalFileNames: originalFileNames,
                                         initialIndex: index,
                                       ),
                                     ),
