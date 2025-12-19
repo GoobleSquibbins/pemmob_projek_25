@@ -166,6 +166,41 @@ class CreatePostPage extends StatelessWidget {
                 ),
                 const SizedBox(height: AppConstants.spacingLarge),
                 const Text(
+                  'Alias (Optional)',
+                  style: TextStyle(
+                    color: AppConstants.textPrimaryColor,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: AppConstants.spacingSmall),
+                TextField(
+                  onChanged: (value) => controller.alias.value = value,
+                  style: const TextStyle(color: AppConstants.textPrimaryColor),
+                  decoration: InputDecoration(
+                    hintText: 'Enter alias (leave empty for anonymous)',
+                    hintStyle: const TextStyle(
+                      color: AppConstants.textSecondaryColor,
+                    ),
+                    filled: true,
+                    fillColor: AppConstants.surfaceColor,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.borderRadiusSmall,
+                      ),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(
+                        AppConstants.borderRadiusSmall,
+                      ),
+                      borderSide: const BorderSide(
+                        color: AppConstants.primaryColor,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: AppConstants.spacingLarge),
+                const Text(
                   'Images (Optional)',
                   style: TextStyle(
                     color: AppConstants.textPrimaryColor,

@@ -53,6 +53,7 @@ class ApiRepository {
     String? content,
     required String nookId,
     List<Map<String, dynamic>>? attachments,
+    String? alias,
   }) async {
     final body = <String, dynamic>{
       'title': title,
@@ -65,6 +66,10 @@ class ApiRepository {
 
     if (attachments != null && attachments.isNotEmpty) {
       body['attachment'] = attachments;
+    }
+
+    if (alias != null && alias.isNotEmpty) {
+      body['alias'] = alias;
     }
 
     final response = await _apiService.post('/posts', body);

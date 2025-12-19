@@ -14,6 +14,7 @@ class CreatePostController extends GetxController {
   final RxString selectedNookId = ''.obs;
   final RxString title = ''.obs;
   final RxString content = ''.obs;
+  final RxString alias = ''.obs;
   final RxList<File> selectedImages = <File>[].obs;
   final RxBool isUploading = false.obs;
   final RxBool isSubmitting = false.obs;
@@ -115,6 +116,7 @@ class CreatePostController extends GetxController {
         content: content.value.isNotEmpty ? content.value : null,
         nookId: selectedNookId.value,
         attachments: attachments.isNotEmpty ? attachments : null,
+        alias: alias.value.isNotEmpty ? alias.value : null,
       );
 
       isSubmitting.value = false;
