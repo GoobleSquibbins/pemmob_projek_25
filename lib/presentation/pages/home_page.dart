@@ -73,10 +73,7 @@ class HomePage extends StatelessWidget {
               final postCard = PostCard(
                 post: post,
                 onTap: () {
-                  Get.toNamed(
-                    AppRoutes.postDetail,
-                    parameters: {'id': post.id.toString()},
-                  );
+                  Get.toNamed('/posts/${post.id}');
                 },
                 onReactionTap: (unicode) {
                   controller.reactToPost(post.id, unicode);

@@ -104,10 +104,7 @@ class NookDetailPage extends StatelessWidget {
                       return PostCard(
                       post: post,
                       onTap: () {
-                        Get.toNamed(
-                          AppRoutes.postDetail,
-                          parameters: {'id': post.id.toString()},
-                        );
+                        Get.toNamed('/posts/${post.id}');
                       },
                       onReactionTap: (unicode) {
                         // Reactions handled in post detail page

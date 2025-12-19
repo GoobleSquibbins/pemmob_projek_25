@@ -3,7 +3,6 @@ import 'package:get/get.dart';
 import '../controllers/nooks_list_controller.dart';
 import '../widgets/nook_card.dart';
 import '../../core/constants/app_constants.dart';
-import '../../routes/app_routes.dart';
 
 class NooksListPage extends StatelessWidget {
   const NooksListPage({super.key});
@@ -82,10 +81,7 @@ class NooksListPage extends StatelessWidget {
               return NookCard(
                 nook: nook,
                 onTap: () {
-                  Get.toNamed(
-                    AppRoutes.nookDetail,
-                    parameters: {'id': nook.id},
-                  );
+                  Get.toNamed('/nooks/${nook.id}');
                 },
               );
             },
