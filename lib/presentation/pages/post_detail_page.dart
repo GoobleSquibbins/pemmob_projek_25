@@ -9,14 +9,44 @@ import '../widgets/reaction_button.dart';
 import '../../core/constants/app_constants.dart';
 import '../../core/utils/date_formatter.dart';
 import '../../core/config/api_config.dart';
+import '../../data/models/comment_model.dart';
 
-class PostDetailPage extends StatelessWidget {
+class PostDetailPage extends StatefulWidget {
   const PostDetailPage({super.key});
+
+  @override
+  State<PostDetailPage> createState() => _PostDetailPageState();
+}
+
+class _PostDetailPageState extends State<PostDetailPage> {
+  final TextEditingController commentController = TextEditingController();
+  int? _replyingToCommentId;
+  String? _replyingToCommentContent;
+
+  void _setReplyMode(int commentId, String commentContent) {
+    setState(() {
+      _replyingToCommentId = commentId;
+      _replyingToCommentContent = commentContent;
+    });
+  }
+
+  void _cancelReplyMode() {
+    setState(() {
+      _replyingToCommentId = null;
+      _replyingToCommentContent = null;
+    });
+    commentController.clear();
+  }
+
+  @override
+  void dispose() {
+    commentController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final controller = Get.put(PostDetailController());
-    final commentController = TextEditingController();
 
     return Scaffold(
       backgroundColor: AppConstants.backgroundColor,
@@ -192,11 +222,28 @@ class PostDetailPage extends StatelessWidget {
                                 comment: comment,
                                 replies: controller.replies[comment.id],
                                 onReply: (commentId) {
-                                  _showReplyDialog(
-                                    context,
-                                    controller,
-                                    commentId,
-                                  );
+                                  CommentModel? targetComment;
+                                  // First try to find in root comments
+                                  try {
+                                    targetComment = controller.comments.firstWhere(
+                                      (c) => c.id == commentId,
+                                    );
+                                  } catch (e) {
+                                    // If not found, search in replies
+                                    for (final replyList in controller.replies.values) {
+                                      try {
+                                        targetComment = replyList.firstWhere(
+                                          (c) => c.id == commentId,
+                                        );
+                                        break;
+                                      } catch (e) {
+                                        // Continue searching
+                                      }
+                                    }
+                                  }
+                                  if (targetComment != null) {
+                                    _setReplyMode(commentId, targetComment.content);
+                                  }
                                 },
                                 onLoadReplies: (commentId) async {
                                   await controller.loadCommentReplies(commentId);
@@ -219,52 +266,112 @@ class PostDetailPage extends StatelessWidget {
                   ),
                 ),
               ),
-              child: Row(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Expanded(
-                    child: TextField(
-                      controller: commentController,
-                      style: const TextStyle(
-                        color: AppConstants.textPrimaryColor,
+                  if (_replyingToCommentId != null)
+                    Container(
+                      padding: const EdgeInsets.all(AppConstants.spacingSmall),
+                      margin: const EdgeInsets.only(bottom: AppConstants.spacingSmall),
+                      decoration: BoxDecoration(
+                        color: AppConstants.primaryColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(
+                          AppConstants.borderRadiusSmall,
+                        ),
+                        border: Border.all(
+                          color: AppConstants.primaryColor.withValues(alpha: 0.3),
+                        ),
                       ),
-                      decoration: InputDecoration(
-                        hintText: 'Write a comment...',
-                        hintStyle: const TextStyle(
-                          color: AppConstants.textSecondaryColor,
-                        ),
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppConstants.borderRadiusSmall,
-                          ),
-                          borderSide: BorderSide(
-                            color: AppConstants.primaryColor.withValues(alpha: 0.3),
-                          ),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(
-                            AppConstants.borderRadiusSmall,
-                          ),
-                          borderSide: const BorderSide(
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.reply,
+                            size: 16,
                             color: AppConstants.primaryColor,
                           ),
-                        ),
-                        filled: true,
-                        fillColor: AppConstants.backgroundColor,
+                          const SizedBox(width: AppConstants.spacingSmall),
+                          Expanded(
+                            child: Text(
+                              'Replying to: ${_replyingToCommentContent != null ? (_replyingToCommentContent!.length > 50 ? "${_replyingToCommentContent!.substring(0, 50)}..." : _replyingToCommentContent) : "comment"}',
+                              style: TextStyle(
+                                color: AppConstants.primaryColor,
+                                fontSize: 12,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          IconButton(
+                            onPressed: _cancelReplyMode,
+                            icon: const Icon(
+                              Icons.close,
+                              size: 18,
+                              color: AppConstants.textSecondaryColor,
+                            ),
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                          ),
+                        ],
                       ),
                     ),
-                  ),
-                  const SizedBox(width: AppConstants.spacingSmall),
-                  IconButton(
-                    onPressed: () {
-                      if (commentController.text.trim().isNotEmpty) {
-                        controller.createComment(commentController.text.trim());
-                        commentController.clear();
-                      }
-                    },
-                    icon: const Icon(
-                      Icons.send,
-                      color: AppConstants.primaryColor,
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: commentController,
+                          style: const TextStyle(
+                            color: AppConstants.textPrimaryColor,
+                          ),
+                          decoration: InputDecoration(
+                            hintText: _replyingToCommentId != null
+                                ? 'Write a reply...'
+                                : 'Write a comment...',
+                            hintStyle: const TextStyle(
+                              color: AppConstants.textSecondaryColor,
+                            ),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppConstants.borderRadiusSmall,
+                              ),
+                              borderSide: BorderSide(
+                                color: AppConstants.primaryColor.withValues(alpha: 0.3),
+                              ),
+                            ),
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(
+                                AppConstants.borderRadiusSmall,
+                              ),
+                              borderSide: const BorderSide(
+                                color: AppConstants.primaryColor,
+                              ),
+                            ),
+                            filled: true,
+                            fillColor: AppConstants.backgroundColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: AppConstants.spacingSmall),
+                      IconButton(
+                        onPressed: () {
+                          if (commentController.text.trim().isNotEmpty) {
+                            if (_replyingToCommentId != null) {
+                              controller.replyToComment(
+                                _replyingToCommentId!,
+                                commentController.text.trim(),
+                              );
+                              _cancelReplyMode();
+                            } else {
+                              controller.createComment(commentController.text.trim());
+                              commentController.clear();
+                            }
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.send,
+                          color: AppConstants.primaryColor,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -275,69 +382,5 @@ class PostDetailPage extends StatelessWidget {
     );
   }
 
-  void _showReplyDialog(
-    BuildContext context,
-    PostDetailController controller,
-    int parentId,
-  ) {
-    final replyController = TextEditingController();
-
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: AppConstants.surfaceColor,
-        title: const Text(
-          'Reply',
-          style: TextStyle(color: AppConstants.textPrimaryColor),
-        ),
-        content: TextField(
-          controller: replyController,
-          style: const TextStyle(color: AppConstants.textPrimaryColor),
-          decoration: InputDecoration(
-            hintText: 'Write a reply...',
-            hintStyle: const TextStyle(
-              color: AppConstants.textSecondaryColor,
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(
-                AppConstants.borderRadiusSmall,
-              ),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(
-                AppConstants.borderRadiusSmall,
-              ),
-              borderSide: const BorderSide(color: AppConstants.primaryColor),
-            ),
-          ),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'Cancel',
-              style: TextStyle(color: AppConstants.textSecondaryColor),
-            ),
-          ),
-          TextButton(
-            onPressed: () {
-              if (replyController.text.trim().isNotEmpty) {
-                controller.replyToComment(
-                  parentId,
-                  replyController.text.trim(),
-                );
-                Navigator.pop(context);
-              }
-            },
-            child: const Text(
-              'Reply',
-              style: TextStyle(color: AppConstants.primaryColor),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
 
